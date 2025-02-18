@@ -46,6 +46,65 @@ func TestPrintTypeValue(t *testing.T) {
 	}
 }
 
+func TestPrintSlice(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []interface{}
+		expected string
+	}{
+		{
+			name:     "empty_slice",
+			input:    []interface{}{},
+			expected: "len=0, cap=0, []\n",
+		},
+		{
+			name:     "mixed_types",
+			input:    []interface{}{1, "hello", true, 3.14},
+			expected: "len=4, cap=4, [1 hello true 3.14]\n",
+		},
+		{
+			name:     "numbers_only",
+			input:    []interface{}{1, 2, 3},
+			expected: "len=3, cap=3, [1 2 3]\n",
+		},
+		{
+			name:     "strings_only",
+			input:    []interface{}{"a", "b", "c"},
+			expected: "len=3, cap=3, [a b c]\n",
+		},
+		{
+			name:     "with_nil",
+			input:    []interface{}{nil, 1, "test"},
+			expected: "len=3, cap=3, [<nil> 1 test]\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Capture stdout
+			oldStdout := os.Stdout
+			r, w, _ := os.Pipe()
+			os.Stdout = w
+
+			// Call PrintSlice
+			PrintSlice(tt.input)
+
+			// Restore stdout
+			w.Close()
+			os.Stdout = oldStdout
+
+			// Read captured output
+			var buf bytes.Buffer
+			buf.ReadFrom(r)
+			got := buf.String()
+
+			if got != tt.expected {
+				t.Errorf("PrintSlice() = %q, want %q", got, tt.expected)
+			}
+		})
+	}
+}
+
 func TestPrintConvertInfo(t *testing.T) {
 	tests := []struct {
 		name     string
