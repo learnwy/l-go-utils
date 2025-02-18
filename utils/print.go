@@ -29,12 +29,12 @@ func PrintConvertInfo(from, to interface{}) {
 
 // FormatSlice creates a string representation of a slice, showing its length, capacity,
 // and elements. It accepts any type through the empty interface.
-func FormatSlice(s []interface{}) string {
+func FormatSlice[T any](s []T) string {
 	return fmt.Sprintf("len=%d, cap=%d, %v", len(s), cap(s), s)
 }
 
 // PrintSlice prints the length, capacity, and elements of a slice to standard output.
 // It accepts any type through the empty interface.
-func PrintSlice(s []interface{}) {
+func PrintSlice[T any](s []T) {
 	fmt.Printf("%s\n", FormatSlice(s))
 }

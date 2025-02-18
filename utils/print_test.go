@@ -47,37 +47,32 @@ func TestPrintTypeValue(t *testing.T) {
 }
 
 func TestPrintSlice(t *testing.T) {
+	// Test cases for interface{} slices
 	tests := []struct {
 		name     string
 		input    []interface{}
 		expected string
-	}{
-		{
-			name:     "empty_slice",
-			input:    []interface{}{},
-			expected: "len=0, cap=0, []\n",
-		},
-		{
-			name:     "mixed_types",
-			input:    []interface{}{1, "hello", true, 3.14},
-			expected: "len=4, cap=4, [1 hello true 3.14]\n",
-		},
-		{
-			name:     "numbers_only",
-			input:    []interface{}{1, 2, 3},
-			expected: "len=3, cap=3, [1 2 3]\n",
-		},
-		{
-			name:     "strings_only",
-			input:    []interface{}{"a", "b", "c"},
-			expected: "len=3, cap=3, [a b c]\n",
-		},
-		{
-			name:     "with_nil",
-			input:    []interface{}{nil, 1, "test"},
-			expected: "len=3, cap=3, [<nil> 1 test]\n",
-		},
-	}
+	}{{
+		name:     "empty_slice",
+		input:    []interface{}{},
+		expected: "len=0, cap=0, []\n",
+	}, {
+		name:     "mixed_types",
+		input:    []interface{}{1, "hello", true, 3.14},
+		expected: "len=4, cap=4, [1 hello true 3.14]\n",
+	}, {
+		name:     "numbers_only",
+		input:    []interface{}{1, 2, 3},
+		expected: "len=3, cap=3, [1 2 3]\n",
+	}, {
+		name:     "strings_only",
+		input:    []interface{}{"a", "b", "c"},
+		expected: "len=3, cap=3, [a b c]\n",
+	}, {
+		name:     "with_nil",
+		input:    []interface{}{nil, 1, "test"},
+		expected: "len=3, cap=3, [<nil> 1 test]\n",
+	}}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -103,6 +98,96 @@ func TestPrintSlice(t *testing.T) {
 			}
 		})
 	}
+
+	// Test cases for typed slices
+	type Person struct {
+		Name string
+		Age  int
+	}
+
+	t.Run("int_slice", func(t *testing.T) {
+		oldStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		PrintSlice([]int{1, 2, 3})
+
+		w.Close()
+		os.Stdout = oldStdout
+
+		var buf bytes.Buffer
+		buf.ReadFrom(r)
+		got := buf.String()
+		expected := "len=3, cap=3, [1 2 3]\n"
+
+		if got != expected {
+			t.Errorf("PrintSlice() = %q, want %q", got, expected)
+		}
+	})
+
+	t.Run("string_slice", func(t *testing.T) {
+		oldStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		PrintSlice([]string{"apple", "banana", "cherry"})
+
+		w.Close()
+		os.Stdout = oldStdout
+
+		var buf bytes.Buffer
+		buf.ReadFrom(r)
+		got := buf.String()
+		expected := "len=3, cap=3, [apple banana cherry]\n"
+
+		if got != expected {
+			t.Errorf("PrintSlice() = %q, want %q", got, expected)
+		}
+	})
+
+	t.Run("float_slice", func(t *testing.T) {
+		oldStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		PrintSlice([]float64{1.1, 2.2, 3.3})
+
+		w.Close()
+		os.Stdout = oldStdout
+
+		var buf bytes.Buffer
+		buf.ReadFrom(r)
+		got := buf.String()
+		expected := "len=3, cap=3, [1.1 2.2 3.3]\n"
+
+		if got != expected {
+			t.Errorf("PrintSlice() = %q, want %q", got, expected)
+		}
+	})
+
+	t.Run("struct_slice", func(t *testing.T) {
+		oldStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		people := []Person{
+			{Name: "Alice", Age: 25},
+			{Name: "Bob", Age: 30},
+		}
+		PrintSlice(people)
+
+		w.Close()
+		os.Stdout = oldStdout
+
+		var buf bytes.Buffer
+		buf.ReadFrom(r)
+		got := buf.String()
+		expected := "len=2, cap=2, [{Alice 25} {Bob 30}]\n"
+
+		if got != expected {
+			t.Errorf("PrintSlice() = %q, want %q", got, expected)
+		}
+	})
 }
 
 func TestPrintConvertInfo(t *testing.T) {
